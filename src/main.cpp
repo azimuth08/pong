@@ -8,12 +8,12 @@
 #include <cmath>
 
 // declare all functions
-void init_game(sf::RenderWindow&, sf::RectangleShape&, sf::RectangleShape&, sf::CircleShape&, sf::Vector2f&);
+void init_game(sf::RenderWindow&, sf::RectangleShape&, sf::RectangleShape&, sf::CircleShape&, sf::Vector2f&, float&);
 void updateGame(sf::RenderWindow&, sf::RectangleShape&, sf::RectangleShape&, sf::CircleShape& ,sf::Vector2f, sf::Vector2f);
 void drawMap(sf::RenderWindow&);
 void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::FloatRect bounds);
 sf::Vector2f checkBounds(sf::Shape&, sf::FloatRect);
-void init_ball(sf::CircleShape&, sf::Vector2f&, sf::FloatRect);
+void init_ball(sf::CircleShape&, sf::Vector2f&, float& ,sf::FloatRect);
 void moveBall(sf::CircleShape&, sf::Vector2f&);
 
 int main()
@@ -32,10 +32,11 @@ int main()
     sf::FloatRect windowBoundary(sf::Vector2f(0.f, 0.f), window.getDefaultView().getSize());
 
     // initialize velocity of ball of zero speed 
+    float velocityMagnitude = 0;
     sf::Vector2f ballVelocity = sf::Vector2f(0,0);
 
     // initialize entities to correct starting position
-    init_game(window, player, enemy, ball, ballVelocity);
+    init_game(window, player, enemy, ball, ballVelocity, velocityMagnitude);
 
     // start program
     while (window.isOpen())
@@ -61,21 +62,25 @@ int main()
             // move down
             player.move({ 0.f,10.f });
         }
-        moveBall(ball, ballVelocity);
         
         // check collision
         if(util::checkCollision(ball, player)) {
             player.setFillColor(sf::Color::Red);
+            util::bounce(ball,ballVelocity,velocityMagnitude, player);
         } else {
             player.setFillColor(sf::Color::White);
         }
 
         if(util::checkCollision(ball, enemy)) {
             enemy.setFillColor(sf::Color::Red);
+            util::bounce(ball,ballVelocity,velocityMagnitude, enemy);
+
         } else {
             enemy.setFillColor(sf::Color::White);
         }
+        util::checkBallBounds(ball,ballVelocity,velocityMagnitude,windowBoundary);
 
+        moveBall(ball, ballVelocity);
         verifyBounds(player, enemy, ball, windowBoundary);
         updateGame(window, player, enemy, ball,player.getPosition(), enemy.getPosition());
 
@@ -84,7 +89,7 @@ int main()
 }
 
 // resets or initializes the game to its starting point
-void init_game(sf::RenderWindow& window, sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::Vector2f& ballVelocity)
+void init_game(sf::RenderWindow& window, sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag)
 {
     // initialize size variables and boundary
     sf::Vector2u windowSize = window.getSize();
@@ -103,7 +108,7 @@ void init_game(sf::RenderWindow& window, sf::RectangleShape& player, sf::Rectang
     // spawn ball in random area in the center
     ball.setOrigin({ Size::ballSize / 2, Size::ballSize / 2 });
     ball.setPosition(ballPos);
-    init_ball(ball, ballVelocity, windowBoundary);
+    init_ball(ball, ballVelocity, velocityMag ,windowBoundary);
 
     window.draw(player);
     window.draw(enemy);
@@ -195,7 +200,7 @@ sf::Vector2f checkBounds(sf::Shape& entity, sf::FloatRect bounds)
     return position;
 }
 
-void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, sf::FloatRect bounds)
+void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag ,sf::FloatRect bounds)
 {
     // create random seed
     srand(static_cast<unsigned int>(time(nullptr)));
@@ -207,9 +212,9 @@ void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, sf::FloatRect 
     // create random direction for ball with set Magnitude
     // We want ||m|| to be constant, but the components to be random
     // within reason
-    float m = 2.0;
+    velocityMag = 2.0;
     ballVelocity.y = (rand() % 13) / 10;
-    ballVelocity.x = pow(m,2) - pow(ballVelocity.y,2);
+    ballVelocity.x = -sqrt(pow(velocityMag,2) - pow(ballVelocity.y,2));
 
 
 }
