@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include "../include/Size.h"
+#include "../include/util.h"
 
 // cpp standard libs
 #include <cstdlib> // for random number generator
@@ -61,6 +62,20 @@ int main()
             player.move({ 0.f,10.f });
         }
         moveBall(ball, ballVelocity);
+        
+        // check collision
+        if(util::checkCollision(ball, player)) {
+            player.setFillColor(sf::Color::Red);
+        } else {
+            player.setFillColor(sf::Color::White);
+        }
+
+        if(util::checkCollision(ball, enemy)) {
+            enemy.setFillColor(sf::Color::Red);
+        } else {
+            enemy.setFillColor(sf::Color::White);
+        }
+
         verifyBounds(player, enemy, ball, windowBoundary);
         updateGame(window, player, enemy, ball,player.getPosition(), enemy.getPosition());
 
@@ -202,3 +217,4 @@ void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, sf::FloatRect 
 void moveBall(sf::CircleShape& ball, sf::Vector2f& ballVelocity){
     ball.setPosition({ ball.getPosition().x + ballVelocity.x, ball.getPosition().y + ballVelocity.y });
 }
+
