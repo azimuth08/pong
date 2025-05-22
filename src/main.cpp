@@ -212,8 +212,8 @@ void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocit
     // create random direction for ball with set Magnitude
     // We want ||m|| to be constant, but the components to be random
     // within reason
-    velocityMag = 2.0;
-    ballVelocity.y = (rand() % 13) / 10;
+    velocityMag = 5;
+    ballVelocity.y = rand() % 4;
     ballVelocity.x = -sqrt(pow(velocityMag,2) - pow(ballVelocity.y,2));
 
 
