@@ -36,11 +36,11 @@ namespace util {
         
         if(velocityMag > 0) 
         {
-            velocityMag += .1;
+            velocityMag += 30;
         } 
         else
         {
-            velocityMag -= .1;
+            velocityMag -= 30;
         }
 
         velocityMag = -velocityMag;

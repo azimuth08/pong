@@ -14,7 +14,7 @@ void drawMap(sf::RenderWindow&);
 void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::FloatRect bounds);
 sf::Vector2f checkBounds(sf::Shape&, sf::FloatRect);
 void init_ball(sf::CircleShape&, sf::Vector2f&, float& ,sf::FloatRect);
-void moveBall(sf::CircleShape&, sf::Vector2f&);
+void moveBall(sf::CircleShape&, sf::Vector2f&, float&);
 
 int main()
 {
@@ -31,16 +31,22 @@ int main()
     // create main boundary for entities
     sf::FloatRect windowBoundary(sf::Vector2f(0.f, 0.f), window.getDefaultView().getSize());
 
-    // initialize velocity of ball of zero speed 
+    // initialize velocities
+    float paddleVelocity = 1000;
     float velocityMagnitude = 0;
     sf::Vector2f ballVelocity = sf::Vector2f(0,0);
 
+    //initialize clock
+    sf::Clock clock;
+    
     // initialize entities to correct starting position
     init_game(window, player, enemy, ball, ballVelocity, velocityMagnitude);
 
     // start program
     while (window.isOpen())
     {
+        sf::Time time = clock.restart();
+        float deltaTime = time.asSeconds();
         // checks for events every frame
         while (const std::optional event = window.pollEvent())
         {
@@ -55,12 +61,12 @@ int main()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
         {
             // move up
-            player.move({ 0.f,-10.f });
+            player.move({ 0.f,-paddleVelocity* deltaTime});
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
         {
             // move down
-            player.move({ 0.f,10.f });
+            player.move({ 0.f, paddleVelocity * deltaTime});
         }
         
         // check collision
@@ -80,7 +86,7 @@ int main()
         }
         util::checkBallBounds(ball,ballVelocity,velocityMagnitude,windowBoundary);
 
-        moveBall(ball, ballVelocity);
+        moveBall(ball, ballVelocity, deltaTime);
         verifyBounds(player, enemy, ball, windowBoundary);
         updateGame(window, player, enemy, ball,player.getPosition(), enemy.getPosition());
 
@@ -212,14 +218,15 @@ void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocit
     // create random direction for ball with set Magnitude
     // We want ||m|| to be constant, but the components to be random
     // within reason
-    velocityMag = 5;
-    ballVelocity.y = rand() % 4;
+    velocityMag = 500;
+    ballVelocity.y = rand() % 400;
     ballVelocity.x = -sqrt(pow(velocityMag,2) - pow(ballVelocity.y,2));
 
 
 }
 
-void moveBall(sf::CircleShape& ball, sf::Vector2f& ballVelocity){
-    ball.setPosition({ ball.getPosition().x + ballVelocity.x, ball.getPosition().y + ballVelocity.y });
+void moveBall(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& deltaTime){
+    ball.setPosition({ ball.getPosition().x + (ballVelocity.x * deltaTime)
+        , ball.getPosition().y + (ballVelocity.y * deltaTime)});
 }
 
