@@ -85,13 +85,13 @@ namespace util {
         if (position.x > rightLimit)
         {
             ret = true;
-            points.rhs ++;
+            points.lhs ++;
         }
         float leftLimit = bounds.position.x - (Size::ballSize);
         if (position.x < leftLimit)
         {
             ret = true;
-            points.lhs ++;
+            points.rhs ++;
         } 
         
         return ret;
