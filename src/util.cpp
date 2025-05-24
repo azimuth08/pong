@@ -66,8 +66,9 @@ namespace util {
         }
     }
 
-    void checkBallBounds(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag, sf::FloatRect& bounds) 
+    bool checkBallBounds(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag, sf::FloatRect& bounds, scoreboard& points) 
     {
+        bool ret = false;
         sf::Vector2f position = ball.getPosition();
 
         // gets the correct bounds of top and bottom of window
@@ -78,7 +79,22 @@ namespace util {
         {
             ballVelocity.y = -ballVelocity.y;
         }
-       
+
+        // checks bounds for left and right of window
+        float rightLimit = bounds.size.x + (Size::ballSize);
+        if (position.x > rightLimit)
+        {
+            ret = true;
+            points.rhs ++;
+        }
+        float leftLimit = bounds.position.x - (Size::ballSize);
+        if (position.x < leftLimit)
+        {
+            ret = true;
+            points.lhs ++;
+        } 
+        
+        return ret;
     }
 
 }
