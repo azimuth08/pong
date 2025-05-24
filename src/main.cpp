@@ -6,20 +6,25 @@
 #include <cstdlib> // for random number generator
 #include <optional>
 #include <cmath>
+#include <iostream>
 
 // declare all functions
-void init_game(sf::RenderWindow&, sf::RectangleShape&, sf::RectangleShape&, sf::CircleShape&, sf::Vector2f&, float&);
+void init_game(sf::RenderWindow&, sf::RectangleShape& , sf::RectangleShape&, sf::CircleShape&, sf::Vector2f&, float&, util::scoreboard&);
 void updateGame(sf::RenderWindow&, sf::RectangleShape&, sf::RectangleShape&, sf::CircleShape& ,sf::Vector2f, sf::Vector2f);
 void drawMap(sf::RenderWindow&);
-void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::FloatRect bounds);
+void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::FloatRect bounds);
 sf::Vector2f checkBounds(sf::Shape&, sf::FloatRect);
 void init_ball(sf::CircleShape&, sf::Vector2f&, float& ,sf::FloatRect);
 void moveBall(sf::CircleShape&, sf::Vector2f&, float&);
+bool round(sf::RectangleShape& , sf::RectangleShape& , sf::CircleShape& , sf::Vector2f& , 
+    sf::FloatRect& , float& , float& , float& , sf::RenderWindow& , util::scoreboard& );
+void displayScore(util::scoreboard&, sf::RenderWindow&);
+void resetRound(sf::CircleShape&, sf::RenderWindow&, sf::Vector2f&, float&);
 
 int main()
 {
     // create main window
-    auto window = sf::RenderWindow(sf::VideoMode({Size::windowWidth, Size::windowHeight}), "CMake SFML Project");
+    sf::RenderWindow window = sf::RenderWindow(sf::VideoMode({Size::windowWidth, Size::windowHeight}), "CMake SFML Project");
     window.setFramerateLimit(144);
     window.setVerticalSyncEnabled(true);
 
@@ -40,7 +45,8 @@ int main()
     sf::Clock clock;
     
     // initialize entities to correct starting position
-    init_game(window, player, enemy, ball, ballVelocity, velocityMagnitude);
+    util::scoreboard points;
+    init_game(window, player, enemy, ball, ballVelocity, velocityMagnitude, points);
 
     // start program
     while (window.isOpen())
@@ -56,51 +62,30 @@ int main()
                 window.close();
             }
         }
-
-        // check for player keyboard movements
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-        {
-            // move up
-            player.move({ 0.f,-paddleVelocity* deltaTime});
+        while(round(player,enemy,ball,ballVelocity,windowBoundary,velocityMagnitude,deltaTime,paddleVelocity,window,points)) 
+        {   
+            time = clock.restart();
+            deltaTime = time.asSeconds();
+            
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-        {
-            // move down
-            player.move({ 0.f, paddleVelocity * deltaTime});
-        }
+        resetRound(ball,window,ballVelocity,velocityMagnitude);
         
-        // check collision
-        if(util::checkCollision(ball, player)) {
-            player.setFillColor(sf::Color::Red);
-            util::bounce(ball,ballVelocity,velocityMagnitude, player);
-        } else {
-            player.setFillColor(sf::Color::White);
-        }
-
-        if(util::checkCollision(ball, enemy)) {
-            enemy.setFillColor(sf::Color::Red);
-            util::bounce(ball,ballVelocity,velocityMagnitude, enemy);
-
-        } else {
-            enemy.setFillColor(sf::Color::White);
-        }
-        util::checkBallBounds(ball,ballVelocity,velocityMagnitude,windowBoundary);
-
-        moveBall(ball, ballVelocity, deltaTime);
-        verifyBounds(player, enemy, ball, windowBoundary);
-        updateGame(window, player, enemy, ball,player.getPosition(), enemy.getPosition());
 
     }
     
 }
 
 // resets or initializes the game to its starting point
-void init_game(sf::RenderWindow& window, sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag)
+void init_game(sf::RenderWindow& window, sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::Vector2f& ballVelocity, 
+    float& velocityMag, util::scoreboard& points)
 {
     // initialize size variables and boundary
     sf::Vector2u windowSize = window.getSize();
     sf::FloatRect windowBoundary(sf::Vector2f(0.f, 0.f), window.getDefaultView().getSize());
 
+    // reset scoreboard
+    points.lhs = 0;
+    points.rhs = 0;
 
     // generate and initialize the players to correct spots
     sf::Vector2f ballPos = { windowSize.x / 2.f , windowSize.y / 2.f };
@@ -124,7 +109,8 @@ void init_game(sf::RenderWindow& window, sf::RectangleShape& player, sf::Rectang
 }
 
 // updates frame depending on the key pressed
-void updateGame(sf::RenderWindow& window ,sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball,sf::Vector2f pPosition, sf::Vector2f ePosition)
+void updateGame(sf::RenderWindow& window ,sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball,sf::Vector2f pPosition, sf::Vector2f ePosition,
+        util::scoreboard& points)
 {
     // resets frame to black background
     window.clear(sf::Color::Black);
@@ -136,6 +122,8 @@ void updateGame(sf::RenderWindow& window ,sf::RectangleShape& player, sf::Rectan
     window.draw(player);
     window.draw(enemy);
     window.draw(ball);
+    
+    displayScore(points, window);
 
     // ends frame by displaying drawing
     window.display();
@@ -167,7 +155,7 @@ void drawMap(sf::RenderWindow& window)
     }
 }
 
-void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::FloatRect bounds)
+void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::FloatRect bounds)
 {
     player.setPosition(checkBounds(player, bounds));
     enemy.setPosition(checkBounds(enemy, bounds));
@@ -230,3 +218,78 @@ void moveBall(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& deltaTim
         , ball.getPosition().y + (ballVelocity.y * deltaTime)});
 }
 
+bool round(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::Vector2f& ballVelocity, 
+    sf::FloatRect& windowBoundary, float& velocityMagnitude, float& deltaTime, float& paddleVelocity, sf::RenderWindow& window, util::scoreboard& points
+)
+{
+    bool ret = true;
+    // check for player keyboard movements
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
+    {
+        // move up
+        player.move({ 0.f,-paddleVelocity* deltaTime});
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
+    {
+        // move down
+        player.move({ 0.f, paddleVelocity * deltaTime});
+    }
+    
+    // check collision
+    if(util::checkCollision(ball, player)) {
+        player.setFillColor(sf::Color::Red);
+        util::bounce(ball,ballVelocity,velocityMagnitude, player);
+    } else {
+        player.setFillColor(sf::Color::White);
+    }
+
+    if(util::checkCollision(ball, enemy)) {
+        enemy.setFillColor(sf::Color::Red);
+        util::bounce(ball,ballVelocity,velocityMagnitude, enemy);
+
+    } else {
+        enemy.setFillColor(sf::Color::White);
+    }
+
+    if (util::checkBallBounds(ball,ballVelocity,velocityMagnitude,windowBoundary, points))
+    {
+        ret = false;
+    }
+
+    moveBall(ball, ballVelocity, deltaTime);
+    verifyBounds(player, enemy, windowBoundary);
+    updateGame(window, player, enemy, ball,player.getPosition(), enemy.getPosition(), points);
+    return ret;
+}
+
+void displayScore(util::scoreboard& points, sf::RenderWindow& window) 
+{
+    std::string scoreS = std::to_string(points.lhs) + "   :   " + std::to_string(points.rhs) ;
+
+    sf::Font font;
+    if (!font.openFromFile(RESOURCES_PATH "PixeloidSans.ttf"))
+    {
+        std::cout << "error opening file" << std::endl;
+    } 
+    sf::Text score(font);
+    score.setPosition({200,200}); 
+    window.draw(score);
+}
+
+void resetRound(sf::CircleShape& ball, sf::RenderWindow& window, sf::Vector2f& ballVelocity, float& velocityMag)
+{
+    // initialize size variables and boundary
+    sf::Vector2u windowSize = window.getSize();
+    sf::FloatRect windowBoundary(sf::Vector2f(0.f, 0.f), window.getDefaultView().getSize());
+
+
+    // generate and initialize the ball to correct spots
+    sf::Vector2f ballPos = { windowSize.x / 2.f , windowSize.y / 2.f };
+
+
+    // spawn ball in random area in the center
+    ball.setOrigin({ Size::ballSize / 2, Size::ballSize / 2 });
+    ball.setPosition(ballPos);
+    init_ball(ball, ballVelocity, velocityMag ,windowBoundary);
+
+}
