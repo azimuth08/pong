@@ -1,3 +1,6 @@
+#ifndef SIZE_H_
+#define SIZE_H_
+
 #include <SFML/Graphics.hpp>
 
 class Size
@@ -9,3 +12,5 @@ public:
 	static sf::Vector2f playerSize;
 	static float ballSize;
 };
+
+#endif
