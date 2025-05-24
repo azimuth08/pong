@@ -3,10 +3,44 @@
 
 namespace util {
 
-    float getDistance(sf::Shape& s1, sf::Shape& s2) 
+
+    sf::Vector2f checkBounds(sf::Shape& entity, sf::FloatRect bounds)
     {
-        return 0.0;
+        sf::Vector2f position = entity.getPosition();
+
+        // gets the correct bounds of top and bottom of window
+        float topLimit = bounds.position.y + (Size::playerSize.y / 2);
+        if (position.y < topLimit)
+        {
+            position.y = topLimit;
+        }
+        float bottomLimit = bounds.size.y - (Size::playerSize.y / 2);
+        if (position.y > bottomLimit)
+        {
+            position.y = bottomLimit;
+        }
+
+        // checks bounds for left and right of window
+        float rightLimit = bounds.size.x + (Size::playerSize.y / 2);
+        if (position.x > rightLimit)
+        {
+            position.x = rightLimit;
+        }
+        float leftLimit = bounds.position.x - (Size::playerSize.x / 2);
+        if (position.x < leftLimit)
+        {
+            position.x = leftLimit;
+        }
+        //position.x = std::min(position.x + (Size::playerSize.x / 2), bounds.size.x);
+        //position.x = std::max(position.x - (Size::playerSize.x / 2), bounds.position.x);
+
+        return position;
     }
+
+    void moveBall(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& deltaTime)
+    {
+        ball.setPosition({ ball.getPosition().x + (ballVelocity.x * deltaTime), ball.getPosition().y + (ballVelocity.y * deltaTime)});
+    }   
 
     bool checkCollision(sf::CircleShape& ball, sf::RectangleShape& player) 
     {
@@ -28,6 +62,8 @@ namespace util {
     bool inRange(float x1, float x2, float k) {
         return k > x1 && k < x2;
     }
+
+
 
     void bounce(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag,sf::RectangleShape& paddle) 
     {

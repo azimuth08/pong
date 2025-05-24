@@ -13,9 +13,7 @@ void init_game(sf::RenderWindow&, sf::RectangleShape& , sf::RectangleShape&, sf:
 void updateGame(sf::RenderWindow&, sf::RectangleShape&, sf::RectangleShape&, sf::CircleShape& ,sf::Vector2f, sf::Vector2f);
 void drawMap(sf::RenderWindow&);
 void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::FloatRect bounds);
-sf::Vector2f checkBounds(sf::Shape&, sf::FloatRect);
 void init_ball(sf::CircleShape&, sf::Vector2f&, float& ,sf::FloatRect);
-void moveBall(sf::CircleShape&, sf::Vector2f&, float&);
 bool round(sf::RectangleShape& , sf::RectangleShape& , sf::CircleShape& , sf::Vector2f& , 
     sf::FloatRect& , float& , float& , float& , sf::RenderWindow& , util::scoreboard& );
 void displayScore(util::scoreboard&, sf::RenderWindow&);
@@ -157,42 +155,11 @@ void drawMap(sf::RenderWindow& window)
 
 void verifyBounds(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::FloatRect bounds)
 {
-    player.setPosition(checkBounds(player, bounds));
-    enemy.setPosition(checkBounds(enemy, bounds));
+    player.setPosition(util::checkBounds(player, bounds));
+    enemy.setPosition(util::checkBounds(enemy, bounds));
 }
 
-sf::Vector2f checkBounds(sf::Shape& entity, sf::FloatRect bounds)
-{
-    sf::Vector2f position = entity.getPosition();
 
-    // gets the correct bounds of top and bottom of window
-    float topLimit = bounds.position.y + (Size::playerSize.y / 2);
-    if (position.y < topLimit)
-    {
-        position.y = topLimit;
-    }
-    float bottomLimit = bounds.size.y - (Size::playerSize.y / 2);
-    if (position.y > bottomLimit)
-    {
-        position.y = bottomLimit;
-    }
-
-    // checks bounds for left and right of window
-    float rightLimit = bounds.size.x + (Size::playerSize.y / 2);
-    if (position.x > rightLimit)
-    {
-        position.x = rightLimit;
-    }
-    float leftLimit = bounds.position.x - (Size::playerSize.x / 2);
-    if (position.x < leftLimit)
-    {
-        position.x = leftLimit;
-    }
-    //position.x = std::min(position.x + (Size::playerSize.x / 2), bounds.size.x);
-    //position.x = std::max(position.x - (Size::playerSize.x / 2), bounds.position.x);
-
-    return position;
-}
 
 void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag ,sf::FloatRect bounds)
 {
@@ -213,10 +180,7 @@ void init_ball(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocit
 
 }
 
-void moveBall(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& deltaTime){
-    ball.setPosition({ ball.getPosition().x + (ballVelocity.x * deltaTime)
-        , ball.getPosition().y + (ballVelocity.y * deltaTime)});
-}
+
 
 bool round(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShape& ball, sf::Vector2f& ballVelocity, 
     sf::FloatRect& windowBoundary, float& velocityMagnitude, float& deltaTime, float& paddleVelocity, sf::RenderWindow& window, util::scoreboard& points
@@ -256,7 +220,7 @@ bool round(sf::RectangleShape& player, sf::RectangleShape& enemy, sf::CircleShap
         ret = false;
     }
 
-    moveBall(ball, ballVelocity, deltaTime);
+    util::moveBall(ball, ballVelocity, deltaTime);
     verifyBounds(player, enemy, windowBoundary);
     updateGame(window, player, enemy, ball,player.getPosition(), enemy.getPosition(), points);
     return ret;

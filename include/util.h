@@ -10,8 +10,8 @@ namespace util {
     {
         int lhs, rhs;
     };
-
-    float getDistance(sf::Shape&, sf::Shape&);
+    sf::Vector2f checkBounds(sf::Shape&, sf::FloatRect);
+    void moveBall(sf::CircleShape&, sf::Vector2f&, float&);
     bool checkCollision(sf::CircleShape&, sf::RectangleShape&);
     bool inRange(sf::Shape&, sf::Shape&);
     // all functions for game physics 
