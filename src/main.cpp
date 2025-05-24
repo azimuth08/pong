@@ -118,7 +118,7 @@ void updateGame(sf::RenderWindow& window ,sf::RectangleShape& player, sf::Rectan
     // create background first
     drawMap(window);
 
-    //update the player's positions
+    //update the player's positions and score
     window.draw(player);
     window.draw(enemy);
     window.draw(ball);
@@ -271,9 +271,11 @@ void displayScore(util::scoreboard& points, sf::RenderWindow& window)
     {
         std::cout << "error opening file" << std::endl;
     } 
-    sf::Text score(font);
-    score.setPosition({200,200}); 
-    window.draw(score);
+
+    sf::Text text(font, scoreS, 100);
+    text.setOrigin({text.getLocalBounds().size.x / 2.0f, text.getLocalBounds().size.y/ 2.0f});
+    text.setPosition({window.getSize().x /2.0f ,100}); 
+    window.draw(text);
 }
 
 void resetRound(sf::CircleShape& ball, sf::RenderWindow& window, sf::Vector2f& ballVelocity, float& velocityMag)
