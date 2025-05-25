@@ -51,11 +51,40 @@ namespace util {
         sf::Vector2f ballRHS = {ball.getPosition().x + ball.getRadius(), ball.getPosition().y}; 
         
         // if left or right most point of ball in player, collision has been made
-        if(playerBounds.contains(ballLHS) || playerBounds.contains(ballRHS) ) 
+        if(contains(player, ballLHS) || contains(player, ballRHS))
         {
             ret = true;
         }
+
+        //if( playerBounds.contains(ballRHS)|| playerBounds.contains(ballRHS) ) 
+        //{
+        //    ret = true;
+        //}
         
+        return ret;
+    }
+
+    bool contains(sf::RectangleShape& container, sf::Vector2f& point)
+    {
+        bool ret = false;
+        float width = container.getLocalBounds().size.x;
+        float height = container.getLocalBounds().size.y;
+
+        float x1 = container.getGlobalBounds().position.x;
+        float x2 = x1 + width;
+
+        float y1 = container.getGlobalBounds().position.y;
+        float y2 = y1 + height;
+
+        if ( (point.x >= x1 && point.x <= x2 ) &&  (point.y >= y1 && point.y <= y2 ) )
+        {
+            ret = true;
+        }
+        else if ( (point.x >= x2 && point.x <= x1 ) &&  (point.y >= y1 && point.y <= y2 ) )
+        {
+            ret = true;
+        }
+
         return ret;
     }
 

@@ -13,6 +13,7 @@ namespace util {
     sf::Vector2f checkBounds(sf::Shape&, sf::FloatRect);
     void moveBall(sf::CircleShape&, sf::Vector2f&, float&);
     bool checkCollision(sf::CircleShape&, sf::RectangleShape&);
+    bool contains(sf::RectangleShape&, sf::Vector2f&);
     bool inRange(sf::Shape&, sf::Shape&);
     // all functions for game physics 
     void bounce(sf::CircleShape&, sf::Vector2f&, float&, sf::RectangleShape&);
