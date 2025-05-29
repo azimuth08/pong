@@ -94,44 +94,51 @@ namespace util {
 
 
 
-    void bounce(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag,sf::RectangleShape& paddle) 
+    void bounce(sf::CircleShape& ball, sf::Vector2f& ballVelocity,sf::RectangleShape& paddle) 
     {
 
-        float distanceFromCenter = ball.getPosition().y  + paddle.getPosition().y; // positive is above and neg is below
-        
-        if(velocityMag > 0) 
+        float distanceFromCenter = paddle.getPosition().y - ball.getPosition().y  ; // positive is above and neg is below
+        std::cout << distanceFromCenter << std::endl;
+        CollisionType collision;
+        float middleDistance = Size::ballSize * 2;
+        if (distanceFromCenter < middleDistance && distanceFromCenter > -middleDistance)
         {
-            velocityMag += 30;
-        } 
+            collision = CollisionType::Middle;
+        }
+        else if (distanceFromCenter >= middleDistance) 
+        {
+            collision = CollisionType::Top;
+        }
         else
         {
-            velocityMag -= 30;
+            collision = CollisionType::Bottom;
         }
 
-        velocityMag = -velocityMag;
         // if ball hits center, flip x velocity 180
-        if(distanceFromCenter == 0) 
-        {
+        // if ball hits above center go x degree up based on distance from center and vice versa
 
-            ballVelocity.x = velocityMag * cos(M_PI);
-            ballVelocity.y = velocityMag * sin(M_PI);
+        ballVelocity.x = -ballVelocity.x;
 
-        }
-        // if ball hits above center go 45 degrees up
-        else if(distanceFromCenter > 0) 
+        if(collision == CollisionType::Top && ballVelocity.y == 0) 
         {
-            ballVelocity.x = velocityMag * cos(M_PI/4);
-            ballVelocity.y = velocityMag * -sin(M_PI/4);
+            ballVelocity.y = -abs(ballVelocity.x) ;
         }
-        // if ball hits below center go 45 degrees down
-        else if(distanceFromCenter < 0) 
+        else if(collision == CollisionType::Top && ballVelocity.y > 0 ) 
         {
-            ballVelocity.x = velocityMag * cos(M_PI/4);
-            ballVelocity.y = velocityMag * sin(M_PI/4);
+            ballVelocity.y = -ballVelocity.y;
+        }
+        
+        if(collision == CollisionType::Bottom && ballVelocity.y == 0)
+        {
+            ballVelocity.y = abs(ballVelocity.x);
+        }
+        else if(collision == CollisionType::Bottom && ballVelocity.y < 0)
+        {
+            ballVelocity.y = -ballVelocity.y;
         }
     }
 
-    bool checkBallBounds(sf::CircleShape& ball, sf::Vector2f& ballVelocity, float& velocityMag, sf::FloatRect& bounds, scoreboard& points) 
+    bool checkBallBounds(sf::CircleShape& ball, sf::Vector2f& ballVelocity, sf::FloatRect& bounds, scoreboard& points) 
     {
         bool ret = false;
         sf::Vector2f position = ball.getPosition();
